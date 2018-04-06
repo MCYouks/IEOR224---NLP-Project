@@ -22,7 +22,7 @@ def retry(f, n_attempts=3):
                     raise
     return wrapper
 
-def timer(f):
+def timeit(f):
     "Measures the execution time of the method/function"
     def wrapper(*args, **kwargs):
         start_time = time.time()
@@ -63,7 +63,7 @@ def dataReader(symbol, data_source, start, end):
 start_date = datetime(2003, 1, 1).date()
 end_date = datetime(2008, 1, 1).date()
 
-@timer
+@timeit
 def quotes_historical_yahoo(symbols, start=start_date, end=end_date, 
                             progress=True):
     """Get the historical data from Yahoo finance and separate the
