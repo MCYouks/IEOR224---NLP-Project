@@ -98,9 +98,8 @@ def quotesReader(path, progress=False, saveExcel=False):
     
     return df1
 
-# Weekly variation dataframe for all the considered stocks
-df = quotesReader('Stocks', progress=True)
-print(df.head(10))
+
+df = quotesReader('Stocks')
 
 # Learn a graphical structure from the correlations
 edge_model = covariance.GraphLassoCV()
@@ -128,5 +127,8 @@ _, labels = cluster.affinity_propagation(edge_model.covariance_)
 n_labels = labels.max()
 names = np.array(df.columns)
 
+Clusters = dict()
 for i in range(n_labels + 1):
-    print('Cluster %i: %s' % ((i + 1), ', '.join(names[labels == i])))
+    Clusters[i+1] = names[labels == i].tolist()
+
+print(Clusters)
