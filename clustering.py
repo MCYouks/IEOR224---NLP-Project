@@ -110,16 +110,6 @@ X = df.copy()
 X /= X.std(axis=0)
 edge_model.fit(X)
 
-# Find a low-dimension embedding for visualization: find the best position of
-# the nodes (the stocks) on a 2D plane
-
-# We use a dense eigen_solver to achieve reproducibility (arpack is
-# initiated with random vectors that we don't control). In addition, we
-# use a large number of neighbors to capture the large-scale structure.
-node_position_model = manifold.LocallyLinearEmbedding(
-    n_components=2, eigen_solver='dense', n_neighbors=6)
-
-embedding = node_position_model.fit_transform(X.T).T
 
 # Cluster using affinity propagation
 
