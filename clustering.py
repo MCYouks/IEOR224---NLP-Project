@@ -15,13 +15,13 @@ def pandasReader(io):
     df = df.set_index('Date')
     df.index = pd.to_datetime(df.index)
     
-    # Extract the Close column only
+    # Extract the Close and Open columns only
     df = df[['Open', 'Close']]
     
     # Opening price on Monday
     df1 = df.groupby(pd.Grouper(freq='W-MON'))[['Open']].first()
     
-    # We sync the df1 index on Friday to easily merge it with the closing date dataframe
+    # We sync the index on Friday to easily merge it with the closing date dataframe
     df1 = df1.groupby(pd.Grouper(freq='W-FRI'))[['Open']].first()
     
     # Closing price on Friday
@@ -39,8 +39,8 @@ def pandasReader(io):
     # Create a rolling median column
     df3['Median'] = df3['%Return'].rolling(2, min_periods=1).median()
     
-    # Create a return column that replaces inf values by the rolling median
-    df3['Return'] = np.where(df3['%Return'].isin([-np.inf, np.inf]), df3['Median'], df3['%Return'])
+    # Create a return column that replaces inf and nan values by the rolling median
+    df3['Return'] = np.where(df3['%Return'].isin([np.nan, -np.inf, np.inf]), df3['Median'], df3['%Return'])
         
     return df3[['Return']] 
 
@@ -98,8 +98,8 @@ def quotesReader(path, progress=False, saveExcel=False):
     
     return df1
 
-
-df = quotesReader('Stocks')
+# Get the weekly return of our stock selection
+df = quotesReader('Stocks', progress=True)
 
 # Learn a graphical structure from the correlations
 edge_model = covariance.GraphLassoCV()
@@ -117,8 +117,14 @@ _, labels = cluster.affinity_propagation(edge_model.covariance_)
 n_labels = labels.max()
 names = np.array(df.columns)
 
+# Print the cluster dict
 Clusters = dict()
 for i in range(n_labels + 1):
     Clusters[i+1] = names[labels == i].tolist()
 
 print(Clusters)
+
+# Write the clusters in an excel file
+writer = pd.ExcelWriter('clusters.xlsx')
+pd.DataFrame({'symbol': names, 'cluster': labels})[['symbol', 'cluster']].to_excel(writer,'Sheet1')
+writer.save()
